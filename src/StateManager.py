@@ -47,10 +47,6 @@ class StateManager:
                         file.write(orjson.dumps(
                             StateManager.state, option=orjson.OPT_NON_STR_KEYS | orjson.OPT_INDENT_2))
                         StateManager.state.pop("timestamp")
-
-                    if not SettingsManager.Get("general.disable_export", False):
-                        StateManager.ExportText(
-                            StateManager.lastSavedState, ref_diff)
                     StateManager.lastSavedState = deep_clone(
                         StateManager.state)
 
@@ -58,13 +54,6 @@ class StateManager:
                                 StateManager.state)
 
                 if len(diff) > 0:
-                    try:
-                        if StateManager.webServer is not None:
-                            StateManager.webServer.emit(
-                                'program_state', StateManager.state)
-                    except Exception as e:
-                        logger.error(traceback.format_exc())
-
                     exportThread = threading.Thread(
                         target=partial(ExportAll, ref_diff=diff))
                     StateManager.threads.append(exportThread)
