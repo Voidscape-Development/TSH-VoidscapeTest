@@ -50,10 +50,23 @@ class StateManager:
                     StateManager.lastSavedState = deep_clone(
                         StateManager.state)
 
+                    if not SettingsManager.Get("general.disable_export", False):
+                        StateManager.ExportText(
+                            StateManager.lastSavedState, ref_diff)
+                    StateManager.lastSavedState = deep_clone(
+                        StateManager.state)
+
                 diff = DeepDiff(StateManager.lastSavedState,
                                 StateManager.state)
 
                 if len(diff) > 0:
+                    try:
+                        if StateManager.webServer is not None:
+                            StateManager.webServer.emit(
+                                'program_state', StateManager.state)
+                    except Exception as e:
+                        logger.error(traceback.format_exc())
+
                     exportThread = threading.Thread(
                         target=partial(ExportAll, ref_diff=diff))
                     StateManager.threads.append(exportThread)
